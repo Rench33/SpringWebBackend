@@ -1,6 +1,11 @@
 package rench.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "countries")
@@ -20,6 +25,10 @@ public class Country {
     @Column(name = "name", nullable = false, unique = true)
     public String name;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "country")
+    public List<Artist> artists = new ArrayList<>();
+
     public String getName() {
         return name;
     }
@@ -28,5 +37,4 @@ public class Country {
     public void setName(String name) {
         this.name = name;
     }
-
 }
