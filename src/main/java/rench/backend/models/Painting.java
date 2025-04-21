@@ -9,14 +9,14 @@ public class Painting {
 
     public Painting() { }
 
-    public Painting(Long id) {
+    public Painting(int id) {
         this.id = id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    public long id;
+    public int id;
 
     @Column(name = "name", nullable = false)
     public String name;
@@ -32,4 +32,3 @@ public class Painting {
     @Column(name = "year", nullable = false)
     public int year;
 }
-

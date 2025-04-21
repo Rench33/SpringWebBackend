@@ -3,5 +3,10 @@ package rench.backend.repositories;
 import rench.backend.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByToken(String s);
+
+    Optional<User> findByLogin(String login);
 }

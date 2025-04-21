@@ -51,7 +51,7 @@ public class ArtistController {
 
     @PutMapping("/artists/{id}")
     public ResponseEntity<Artist> updateArtist(@PathVariable Long id, @RequestBody Artist artistDetails) {
-        Optional<Artist> optionalArtist = artistRepository.findById(id);
+        Optional<Artist> optionalArtist = artistRepository.findById(Math.toIntExact(id));
         if (optionalArtist.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "artist not found");
         }
@@ -74,7 +74,7 @@ public class ArtistController {
 
     @DeleteMapping("/artists/{id}")
     public ResponseEntity<Map<String, Boolean>> deleteArtist(@PathVariable Long id) {
-        Optional<Artist> artist = artistRepository.findById(id);
+        Optional<Artist> artist = artistRepository.findById(Math.toIntExact(id));
         Map<String, Boolean> response = new HashMap<>();
         if (artist.isPresent()) {
             artistRepository.delete(artist.get());

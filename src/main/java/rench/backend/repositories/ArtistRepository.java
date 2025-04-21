@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import rench.backend.models.Artist;
 
 @Repository
-public interface ArtistRepository  extends JpaRepository<Artist, Long> {
+public interface ArtistRepository  extends JpaRepository<Artist, Integer> {
 
 }

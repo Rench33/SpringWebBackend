@@ -1,5 +1,4 @@
 package rench.backend.models;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -12,14 +11,14 @@ import java.util.Set;
 public class Museum {
 
     public Museum() { }
-    public Museum(Long id) {
+    public Museum(int id) {
         this.id = id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    public long id;
+    public int id;
 
     @Column(name = "name", nullable = false, unique = true)
     public String name;
@@ -39,4 +38,3 @@ public class Museum {
     public Set<User>
             users = new HashSet<>();
 }
-

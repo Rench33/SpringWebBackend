@@ -41,7 +41,7 @@ public class CountryController {
                                                  @RequestBody Country countryDetails) {
         Country country = null;
         Optional<Country>
-                cc = countryRepository.findById(countryId);
+                cc = countryRepository.findById(Math.toIntExact(countryId));
         if (cc.isPresent()) {
             country = cc.get();
             country.name = countryDetails.name;
@@ -54,7 +54,7 @@ public class CountryController {
 
     @GetMapping("/countries/{id}/artists")
     public ResponseEntity<List<Artist>> getCountryArtists(@PathVariable(value = "id") Long countryId) {
-        Optional<Country> cc = countryRepository.findById(countryId);
+        Optional<Country> cc = countryRepository.findById(Math.toIntExact(countryId));
         if (cc.isPresent()) {
             return ResponseEntity.ok(cc.get().artists);
         }
@@ -64,7 +64,7 @@ public class CountryController {
     @DeleteMapping("/countries/{id}")
     public ResponseEntity<Object> deleteCountry(@PathVariable(value = "id") Long countryId) {
         Optional<Country>
-                country = countryRepository.findById(countryId);
+                country = countryRepository.findById(Math.toIntExact(countryId));
         Map<String, Boolean>
                 resp = new HashMap<>();
         if (country.isPresent()) {

@@ -39,7 +39,7 @@ public class MuseumController {
     @PutMapping("/museums/{id}")
     public ResponseEntity<Museum> updateMuseum(@PathVariable("id") Long id,
                                                @RequestBody Museum museumDetails) {
-        Optional<Museum> mm = museumRepository.findById(id);
+        Optional<Museum> mm = museumRepository.findById(Math.toIntExact(id));
         if (mm.isPresent()) {
             Museum museum = mm.get();
             museum.name = museumDetails.name;
@@ -53,7 +53,7 @@ public class MuseumController {
 
     @DeleteMapping("/museums/{id}")
     public ResponseEntity<Object> deleteMuseum(@PathVariable("id") Long id) {
-        Optional<Museum> museum = museumRepository.findById(id);
+        Optional<Museum> museum = museumRepository.findById(Math.toIntExact(id));
         Map<String, Boolean> resp = new HashMap<>();
         if (museum.isPresent()) {
             museumRepository.delete(museum.get());
@@ -64,4 +64,3 @@ public class MuseumController {
         return ResponseEntity.ok(resp);
     }
 }
-

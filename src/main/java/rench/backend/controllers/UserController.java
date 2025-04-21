@@ -38,7 +38,7 @@ public class UserController {
 
     @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") Long userId, @RequestBody User userDetails) {
-        Optional<User> uu = userRepository.findById(userId);
+        Optional<User> uu = userRepository.findById(Math.toIntExact(userId));
         if (uu.isPresent()) {
             User user = uu.get();
             user.login = userDetails.login;
@@ -52,7 +52,7 @@ public class UserController {
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable("id") Long userId) {
-        Optional<User> uu = userRepository.findById(userId);
+        Optional<User> uu = userRepository.findById(Math.toIntExact(userId));
         Map<String, Boolean> resp = new HashMap<>();
         if (uu.isPresent()) {
             userRepository.delete(uu.get());
@@ -66,7 +66,7 @@ public class UserController {
     @PostMapping("/users/{id}/addmuseums")
     public ResponseEntity<Object> addMuseums(@PathVariable(value = "id") Long userId,
                                              @Valid @RequestBody Set<Museum> museums) {
-        Optional<User> uu = userRepository.findById(userId);
+        Optional<User> uu = userRepository.findById(Math.toIntExact(userId));
         int cnt = 0;
         if (uu.isPresent()) {
             User u = uu.get();
@@ -88,7 +88,7 @@ public class UserController {
     @PostMapping("/users/{id}/removemuseums")
     public ResponseEntity<Object> removeMuseums(@PathVariable(value = "id") Long userId,
                                                 @Valid @RequestBody Set<Museum> museums) {
-        Optional<User> uu = userRepository.findById(userId);
+        Optional<User> uu = userRepository.findById(Math.toIntExact(userId));
         int cnt = 0;
         if (uu.isPresent()) {
             User u = uu.get();
@@ -108,4 +108,3 @@ public class UserController {
         return userRepository.findAll();
     }
 }
-

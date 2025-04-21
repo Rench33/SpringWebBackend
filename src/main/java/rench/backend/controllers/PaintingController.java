@@ -29,7 +29,7 @@ public class PaintingController {
 
     @PutMapping("/paintings/{id}")
     public ResponseEntity<Painting> updatePainting(@PathVariable Long id, @RequestBody Painting details) {
-        Optional<Painting> pp = paintingRepository.findById(id);
+        Optional<Painting> pp = paintingRepository.findById(Math.toIntExact(id));
         if (pp.isPresent()) {
             Painting p = pp.get();
             p.name = details.name;
@@ -45,7 +45,7 @@ public class PaintingController {
 
     @DeleteMapping("/paintings/{id}")
     public ResponseEntity<Object> deletePainting(@PathVariable Long id) {
-        Optional<Painting> p = paintingRepository.findById(id);
+        Optional<Painting> p = paintingRepository.findById(Math.toIntExact(id));
         Map<String, Boolean> resp = new HashMap<>();
         if (p.isPresent()) {
             paintingRepository.delete(p.get());
@@ -61,4 +61,3 @@ public class PaintingController {
         return paintingRepository.findAll();
     }
 }
-

@@ -8,14 +8,14 @@ import jakarta.persistence.*;
 public class Artist {
 
     public Artist() { }
-    public Artist(Long id) {
+    public Artist(int id) {
         this.id = id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    public long id;
+    public int id;
 
     @Column(name = "name", nullable = false, unique = true)
     public String name;

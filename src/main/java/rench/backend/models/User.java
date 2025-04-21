@@ -13,14 +13,14 @@ import java.util.Set;
 public class User {
 
     public User() { }
-    public User(Long id) {
+    public User(int id) {
         this.id = id;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    public long id;
+    public int id;
 
     @Column(name = "login", nullable = false, unique = true)
     public String login;
@@ -55,4 +55,3 @@ public class User {
         m.users.remove(this);
     }
 }
-
