@@ -11,7 +11,7 @@ import rench.backend.models.Country;
 import rench.backend.repositories.CountryRepository;
 import org.springframework.web.server.ResponseStatusException;
 
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1")
 public class CountryController {
