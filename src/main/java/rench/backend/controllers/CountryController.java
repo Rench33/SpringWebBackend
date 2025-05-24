@@ -3,7 +3,13 @@ package rench.backend.controllers;
 import java.util.*;
 
 import rench.backend.models.Artist;
+import rench.backend.models.Museum;
+import rench.backend.tools.DataValidationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,37 +25,45 @@ public class CountryController {
     CountryRepository countryRepository;
 
     @PostMapping("/countries")
-    public ResponseEntity<?> createCountry(@RequestBody Country country) {
-        if (country.getName() == null || country.getName().trim().isEmpty()) {
-            Map<String, String> error = Map.of("error", "emptyname");
-            return ResponseEntity.badRequest().body(error);
-        }
-
+    public ResponseEntity<Object>
+    createCountry(@Valid @RequestBody Country country)
+            throws DataValidationException {
         try {
             Country nc = countryRepository.save(country);
-            return ResponseEntity.ok(nc);
-        } catch (Exception ex) {
-            String error = ex.getMessage().contains("countries.name_UNIQUE") ?
-                    "countyalreadyexists" : "undefinederror";
-            Map<String, String> errorMap = Map.of("error", error);
-            return ResponseEntity.badRequest().body(errorMap);
+            return new ResponseEntity<Object>(nc, HttpStatus.OK);
+        }
+        catch(Exception ex) {
+            String error;
+            if (ex.getMessage().contains("countries.name_UNIQUE"))
+                throw new DataValidationException("Эта страна уже есть в базе");
+            else
+                throw new DataValidationException("Неизвестная ошибка");
         }
     }
 
     @PutMapping("/countries/{id}")
-    public ResponseEntity<Country> updateCountry(@PathVariable(value = "id") Long countryId,
-                                                 @RequestBody Country countryDetails) {
-        Country country = null;
-        Optional<Country>
-                cc = countryRepository.findById(Math.toIntExact(countryId));
-        if (cc.isPresent()) {
-            country = cc.get();
+    public ResponseEntity<Country> updateCountry(
+            @PathVariable(value = "id") Long countryId,
+            @Valid @RequestBody Country countryDetails) throws DataValidationException {
+        try {
+            Country country = countryRepository.findById(Math.toIntExact(countryId))
+                    .orElseThrow(() -> new DataValidationException("Страна с таким индексом не найдена"));
             country.name = countryDetails.name;
             countryRepository.save(country);
             return ResponseEntity.ok(country);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "country not found");
+        } catch (Exception ex) {
+            if (ex.getMessage().contains("countries.name_UNIQUE")) {
+                throw new DataValidationException("Эта страна уже есть в базе");
+            } else {
+                throw new DataValidationException("Неизвестная ошибка");
+            }
         }
+    }
+
+    @PostMapping("/deletecountries")
+    public ResponseEntity<?> deleteCountries(@RequestBody List<Country> countries) {
+        countryRepository.deleteAll(countries);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/countries/{id}/artists")
@@ -59,6 +73,13 @@ public class CountryController {
             return ResponseEntity.ok(cc.get().artists);
         }
         return ResponseEntity.ok(new ArrayList<Artist>());
+    }
+    @GetMapping("/countries/{id}")
+    public ResponseEntity<Country> getCountry(@PathVariable(value = "id") Long countryId)
+            throws DataValidationException {
+        Country country = countryRepository.findById(Math.toIntExact(countryId))
+                .orElseThrow(()->new DataValidationException("Страна с таким индексом не найдена"));
+        return ResponseEntity.ok(country);
     }
 
     @DeleteMapping("/countries/{id}")
@@ -77,8 +98,8 @@ public class CountryController {
     }
 
     @GetMapping("/countries")
-    public List
-    getAllCountries() {
-        return countryRepository.findAll();
+    public List<Country> getAllCountries() {
+        return countryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
     }
+
 }

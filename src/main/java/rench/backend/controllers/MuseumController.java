@@ -3,6 +3,9 @@ package rench.backend.controllers;
 import rench.backend.models.Museum;
 import rench.backend.repositories.MuseumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +38,23 @@ public class MuseumController {
             return ResponseEntity.badRequest().body(Map.of("error", error));
         }
     }
+
+    @GetMapping("/museums/{id}")
+    public ResponseEntity<Museum> getMuseum(@PathVariable("id") Long id) {
+        Museum museum = museumRepository.findById(Math.toIntExact(id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Музей не найден"));
+        return ResponseEntity.ok(museum);
+    }
+    @GetMapping("/museums/paged")
+    public Page<Museum> getPagedMuseums(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+        return museumRepository.findAll(PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "name")));
+    }
+    @PostMapping("/deletemuseums")
+    public ResponseEntity<?> deleteMuseums(@RequestBody List<Museum> museums) {
+        museumRepository.deleteAll(museums);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     @PutMapping("/museums/{id}")
     public ResponseEntity<Museum> updateMuseum(@PathVariable("id") Long id,

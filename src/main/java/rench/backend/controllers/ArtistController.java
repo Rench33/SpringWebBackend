@@ -2,9 +2,14 @@ package rench.backend.controllers;
 
 import rench.backend.models.Artist;
 import rench.backend.models.Country;
+import rench.backend.models.Museum;
+import rench.backend.models.Painting;
 import rench.backend.repositories.ArtistRepository;
 import rench.backend.repositories.CountryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,30 +53,66 @@ public class ArtistController {
             return ResponseEntity.badRequest().body(Map.of("error", error));
         }
     }
+    @DeleteMapping("/artists")
+    public ResponseEntity<?> deleteArtists(@RequestBody List<Integer> artistIds) {
+        try {
+            artistRepository.deleteAllById(artistIds);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Ошибка удаления");
+        }
+    }
 
+    //@GetMapping("/artists")
+    //public Page<Artist> getAllArtists(
+    //        @RequestParam(defaultValue = "0") int page,
+    //        @RequestParam(defaultValue = "10") int size
+    //) {
+    //    return artistRepository.findAll(PageRequest.of(page, size, Sort.by("name")));
+    //}
+
+    @GetMapping("/artists/{id}")
+    public ResponseEntity<Artist> getArtist(@PathVariable Long id) {
+        Optional<Artist> artist = artistRepository.findById(Math.toIntExact(id));
+        return artist.map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
     @PutMapping("/artists/{id}")
-    public ResponseEntity<Artist> updateArtist(@PathVariable Long id, @RequestBody Artist artistDetails) {
+    public ResponseEntity<Artist> updateArtist(
+            @PathVariable("id") Long id,
+            @RequestBody Artist artistDetails
+    ) {
+        // 1. Поиск художника
         Optional<Artist> optionalArtist = artistRepository.findById(Math.toIntExact(id));
         if (optionalArtist.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "artist not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Художник не найден");
         }
 
+        // 2. Обновление полей
         Artist artist = optionalArtist.get();
-        artist.name = artistDetails.name;
-        artist.century = artistDetails.century;
+        artist.setName(artistDetails.getName());
+        artist.setCentury(artistDetails.getCentury());
 
-        if (artistDetails.country != null && artistDetails.country.id != 0) {
-            Optional<Country> country = countryRepository.findById(artistDetails.country.id);
+        // 3. Обновление страны (аналогично MuseumController)
+        if (artistDetails.getCountry() != null && artistDetails.getCountry().getId() != 0) {
+            Optional<Country> country = countryRepository.findById(artistDetails.getCountry().getId());
             if (country.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid country");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверная страна");
             }
-            artist.country = country.get();
+            artist.setCountry(country.get());
         }
 
+        // 4. Сохранение
         Artist updatedArtist = artistRepository.save(artist);
         return ResponseEntity.ok(updatedArtist);
     }
-
+    @GetMapping("/artists/paged")
+    public Page<Artist> getPagedArtists(
+            @RequestParam("page") int page,
+            @RequestParam("limit") int limit
+    ) {
+        return artistRepository.findAll(PageRequest.of(page, limit, Sort.by("name")));
+    }
     @DeleteMapping("/artists/{id}")
     public ResponseEntity<Map<String, Boolean>> deleteArtist(@PathVariable Long id) {
         Optional<Artist> artist = artistRepository.findById(Math.toIntExact(id));
@@ -84,7 +125,11 @@ public class ArtistController {
         }
         return ResponseEntity.ok(response);
     }
-
+    @PostMapping("/deleteartists")
+    public ResponseEntity<?> deleteMuseums(@RequestBody List<Artist> artists) {
+        artistRepository.deleteAll(artists);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
     @GetMapping("/artists")
     public List<Artist> getAllArtists() {
         return artistRepository.findAll();

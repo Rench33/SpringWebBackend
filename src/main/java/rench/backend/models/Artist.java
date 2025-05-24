@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 public class Artist {
 
     public Artist() { }
+
     public Artist(int id) {
         this.id = id;
     }
@@ -26,4 +27,38 @@ public class Artist {
     @ManyToOne()
     @JoinColumn(name = "countryid")
     public Country country;
+
+    // Геттеры
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCentury() {
+        return century;
+    }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    // Сеттеры
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCentury(String century) {
+        this.century = century;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
 }

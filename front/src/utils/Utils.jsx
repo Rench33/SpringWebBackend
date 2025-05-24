@@ -8,11 +8,10 @@ class Utils {
         localStorage.removeItem('user')
     }
 
-    getToken()
-    {
-        let user = JSON.parse(localStorage.getItem('user'))
-        return user && "Bearer " + user.token;
-    }
+   getToken() {
+       const user = JSON.parse(localStorage.getItem('user'));
+       return user?.token || null; // Убрать добавление "Bearer"
+   }
 
     getUserName()
     {

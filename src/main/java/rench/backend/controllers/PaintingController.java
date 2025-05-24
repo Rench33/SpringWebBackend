@@ -1,14 +1,20 @@
 package rench.backend.controllers;
 
+import rench.backend.models.Museum;
 import rench.backend.models.Painting;
 import rench.backend.repositories.PaintingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -27,7 +33,17 @@ public class PaintingController {
         Painting p = paintingRepository.save(painting);
         return ResponseEntity.ok(p);
     }
-
+    @GetMapping("/paintings/{id}")
+    public ResponseEntity<Painting> getPainting(@PathVariable Long id) {
+        Optional<Painting> painting = paintingRepository.findById(Math.toIntExact(id));
+        return painting.map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Картина не найдена"));
+    }
+    @PostMapping("/deletepaintings")
+    public ResponseEntity<?> deletePaintings(@RequestBody List<Painting> paintings) {
+        paintingRepository.deleteAll(paintings);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
     @PutMapping("/paintings/{id}")
     public ResponseEntity<Painting> updatePainting(@PathVariable Long id, @RequestBody Painting details) {
         Optional<Painting> pp = paintingRepository.findById(Math.toIntExact(id));

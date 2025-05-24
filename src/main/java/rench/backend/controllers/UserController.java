@@ -1,12 +1,19 @@
 package rench.backend.controllers;
 
 import rench.backend.models.Museum;
+import rench.backend.models.Painting;
 import rench.backend.models.User;
 import rench.backend.repositories.MuseumRepository;
 import rench.backend.repositories.UserRepository;
+import rench.backend.tools.DataValidationException;
+import rench.backend.tools.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
@@ -36,17 +43,41 @@ public class UserController {
         }
     }
 
+    @DeleteMapping("/users")
+    public ResponseEntity<?> deleteUsers1(@RequestBody List<Integer> userIds) {
+        try {
+            userRepository.deleteAllById(userIds);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Ошибка удаления");
+        }
+    }
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") Long userId, @RequestBody User userDetails) {
-        Optional<User> uu = userRepository.findById(Math.toIntExact(userId));
-        if (uu.isPresent()) {
-            User user = uu.get();
-            user.login = userDetails.login;
+    public ResponseEntity updateUser(@PathVariable(value = "id") Long userId,
+                                     @Valid @RequestBody User userDetails)
+            throws DataValidationException
+    {
+        try {
+            User user = userRepository.findById(Math.toIntExact(userId))
+                    .orElseThrow(() -> new DataValidationException(" Пользователь с таким индексом не найден"));
             user.email = userDetails.email;
+            String np = userDetails.np;
+            if (np != null  && !np.isEmpty()) {
+                byte[] b = new byte[32];
+                new Random().nextBytes(b);
+                String salt = new String(Hex.encode(b));
+                user.password = Utils.ComputeHash(np, salt);
+                user.salt = salt;
+            }
             userRepository.save(user);
             return ResponseEntity.ok(user);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
+        }
+        catch (Exception ex) {
+            String error;
+            if (ex.getMessage().contains("users.email_UNIQUE"))
+                throw new DataValidationException("Пользователь с такой почтой уже есть в базе");
+            else
+                throw new DataValidationException("Неизвестная ошибка");
         }
     }
 
@@ -102,7 +133,17 @@ public class UserController {
         response.put("count", String.valueOf(cnt));
         return ResponseEntity.ok(response);
     }
-
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUser(@PathVariable("id") Long id) {
+        Optional<User> user = userRepository.findById(Math.toIntExact(id));
+        return user.map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+    @PostMapping("/deleteusers")
+    public ResponseEntity<?> deleteUsers(@RequestBody List<User> users) {
+        userRepository.deleteAll(users);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return userRepository.findAll();
